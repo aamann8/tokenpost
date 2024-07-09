@@ -138,5 +138,3 @@ while True:
                     total_unsuccessful_messages += 1
 
                 time.sleep(delay_time)  # Delay between each message
-
-            # Print Facebook ID, message
