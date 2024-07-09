@@ -5,31 +5,7 @@ from colorama import Fore, Style
 
 # Logo and introduction
 logo = r'''
-  /$$$$$$   /$$$$$$  /$$      /$$ /$$$$$$$$ /$$$$$$$$ /$$$$$$$ 
- /$$__  $$ /$$__  $$| $$$    /$$$| $$_____/| $$_____/| $$__  $$
-| $$  \__/| $$  \ $$| $$$$  /$$$$| $$      | $$      | $$  \ $$
-|  $$$$$$ | $$$$$$$$| $$ $$/$$ $$| $$$$$   | $$$$$   | $$$$$$$/
- \____  $$| $$__  $$| $$  $$$| $$| $$__/   | $$__/   | $$__  $$
- /$$  \ $$| $$  | $$| $$\  $ | $$| $$      | $$      | $$  \ $$
-|  $$$$$$/| $$  | $$| $$ \/  | $$| $$$$$$$$| $$$$$$$$| $$  | $$
- \______/ |__/  |__/|__/     |__/|________/|________/|__/  |__/
-  
- /$$   /$$ /$$      /$$ /$$$$$$$                               
-| $$  / $$| $$  /$ | $$| $$__  $$                              
-|  $$/ $$/| $$ /$$$| $$| $$  \ $$                              
- \  $$$$/ | $$/$$ $$ $$| $$  | $$                              
-  >$$  $$ | $$$$_  $$$$| $$  | $$                              
- /$$/\  $$| $$$/ \  $$$|    o $$  | $$                              
-| $$  \ $$| $$/   \  $$| $$$$$$$/                              
-|__/  |__/|__/     \__/|_______/                               
-                                                        
---------------------------------------------------------------
-      WELCOME TO THE MULTI TOKEN POST TOOL
---------------------------------------------------------------
-       THIS TOOL CREATED BY AALAM HASHMI
---------------------------------------------------------------
-        MULTI IDZ MULTI PAGE WALLS MULTI FILE LOADER TOOL
---------------------------------------------------------------
+   [Your logo here]
 '''
 
 # Print the logo
@@ -63,32 +39,59 @@ repeat_delay = int(input("ENTER DELAY (in seconds) BEFORE REPEATING THE PROCESS:
 
 # Function to get profile name using an access token
 def get_profile_name(access_token):
-    url = f'https://graph.facebook.com/v17.0/me?access_token={access_token}'
-    response = requests.get(url)
-    data = response.json()
-    if 'name' in data:
-        return data['name']
-    return None
+    try:
+        url = f'https://graph.facebook.com/v17.0/me?access_token={access_token}'
+        response = requests.get(url)
+        response.raise_for_status()  # Raise HTTPError for bad responses
+
+        data = response.json()
+        if 'name' in data:
+            return data['name']
+        else:
+            print(f'{Fore.RED}Profile name not found for access token: {access_token}{Style.RESET_ALL}')
+            return None
+
+    except requests.exceptions.RequestException as e:
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f'{Fore.RED}[{current_time}] {Fore.RED}Request error getting profile name: {str(e)}{Style.RESET_ALL}')
+        return None
+
+    except Exception as e:
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f'{Fore.RED}[{current_time}] {Fore.RED}An unexpected error occurred getting profile name: {str(e)}{Style.RESET_ALL}')
+        return None
 
 # Function to send a message to a user's inbox conversation using an access token
 def send_message(access_token, user_id, hater_name, message):
-    url = f"https://graph.facebook.com/v15.0/{user_id}/comments"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; Samsung Galaxy S9 Build/OPR6.170623.017; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.125 Mobile Safari/537.36',
-        'Referer': 'https://www.facebook.com/',
-        'Authorization': f'Bearer {access_token}'
-    }
-    data = {'message': hater_name + ' ' + message}
+    try:
+        url = f"https://graph.facebook.com/v15.0/{user_id}/comments"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; Samsung Galaxy S9 Build/OPR6.170623.017; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.125 Mobile Safari/537.36',
+            'Referer': 'https://www.facebook.com/',
+            'Authorization': f'Bearer {access_token}'
+        }
+        data = {'message': hater_name + ' ' + message}
 
-    response = requests.post(url, headers=headers, data=data)
-    if response.status_code == 200:
+        response = requests.post(url, headers=headers, data=data)
+        response.raise_for_status()  # Raise HTTPError for bad responses
+
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(f'{Fore.BLUE}[{current_time}] {Fore.YELLOW}Comment sent successfully to user ID {user_id}: {Fore.GREEN}{hater_name + message}')
         return True
-    else:
+
+    except requests.exceptions.RequestException as e:
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(f'{Fore.BLUE}[{current_time}] {Fore.RED}Error sending comment to user ID {user_id}: {Fore.RED}{hater_name + message}')
-        print(f'{Fore.RED}[{current_time}] Response content: {Fore.RED}{response.content.decode()}')
+        print(f'{Fore.RED}[{current_time}] {Fore.RED}Request error sending comment to user ID {user_id}: {str(e)}{Style.RESET_ALL}')
+        return False
+
+    except requests.exceptions.HTTPError as e:
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f'{Fore.RED}[{current_time}] {Fore.RED}HTTP error sending comment to user ID {user_id}: {str(e)}{Style.RESET_ALL}')
+        return False
+
+    except Exception as e:
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f'{Fore.RED}[{current_time}] {Fore.RED}An unexpected error occurred sending comment to user ID {user_id}: {str(e)}{Style.RESET_ALL}')
         return False
 
 # Main loop to send messages
@@ -117,9 +120,6 @@ while True:
                 with open(message_file, 'r') as f:
                     messages = f.read().splitlines()
 
-                # Shuffle the messages (if needed)
-                # random.shuffle(messages)
-
                 # Get the hater name for the current user ID
                 hater_name = haters_name[user_id]
 
@@ -139,24 +139,4 @@ while True:
 
                 time.sleep(delay_time)  # Delay between each message
 
-            # Print Facebook ID, message, and current date/time after message is sent
-            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(f'{Fore.MAGENTA}Facebook ID: {user_id}')
-            print('--------------------------------------------')
-            print('Next ID Ready To Send Comment')
-            print('--------------------------------------------')
-
-        except requests.exceptions.RequestException as e:
-            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(f'{Fore.RED}[{current_time}] Internet disconnected. Reconnecting in 10 seconds...{Style.RESET_ALL}')
-            time.sleep(10)
-
-        except Exception as e:
-            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(f'{Fore.RED}[{current_time}] An error occurred: {str(e)}{Style.RESET_ALL}')
-            continue
-
-    print('--------------------------------------------')
-    print('All comments sent. Waiting before repeating the process...')
-    print('--------------------------------------------')
-    time.sleep(repeat_delay)  # Delay before repeating the process
+            # Print Facebook ID, message
